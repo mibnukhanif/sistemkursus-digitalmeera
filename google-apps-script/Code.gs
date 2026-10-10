@@ -25,10 +25,17 @@
 // ============================================================================
 // KONFIGURASI SPREADSHEET & GOOGLE DRIVE
 // ============================================================================
-const SPREADSHEET_ID = "18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8";
+const SPREADSHEET_ID = "1jejmJlaGXD7AYxu6bVVXC7sQWFXaL81hW0lzEP3anTY";
 const DRIVE_ROOT_FOLDER_ID = "1mQwSeNLsVGFaNzTKqbUyV4-NeViBuObo";
 
 function getAppSpreadsheet() {
+  // 1. Jika Apps Script terikat langsung ke Spreadsheet (Container-bound via Extensions -> Apps Script)
+  try {
+    const active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (e) {}
+
+  // 2. Buka berdasarkan SPREADSHEET_ID
   if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
     try {
       const ss = SpreadsheetApp.openById(SPREADSHEET_ID.trim());
@@ -37,7 +44,13 @@ function getAppSpreadsheet() {
       Logger.log("Peringatan openById: " + e.message);
     }
   }
-  return SpreadsheetApp.getActiveSpreadsheet();
+
+  // 3. Fallback jika openById awal gagal
+  try {
+    return SpreadsheetApp.openById("1jejmJlaGXD7AYxu6bVVXC7sQWFXaL81hW0lzEP3anTY");
+  } catch (err) {
+    throw new Error("Spreadsheet tidak dapat dibuka: " + err.message);
+  }
 }
 
 function getAppRootFolder() {

@@ -6,12 +6,14 @@ const LOCAL_PESERTA_KEY = 'digitalmeera_local_peserta';
 const LOCAL_ABSENSI_KEY = 'digitalmeera_local_absensi';
 const LOCAL_SHIFTS_KEY = 'digitalmeera_local_shifts';
 const LOCAL_PROFIL_KEY = 'digitalmeera_local_profil';
+const CUSTOM_LOGO_KEY = 'digitalmeera_custom_logo';
+const CUSTOM_LOGO_CLEARED_KEY = 'digitalmeera_custom_logo_cleared';
 const LOCAL_SETTINGS_KEY = 'digitalmeera_local_settings';
 const LOCAL_ADMIN_KEY = 'digitalmeera_local_admin';
 const LOCAL_SEQ_KEY = 'digitalmeera_local_seq';
 
-export const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzu-zcoOlitQEF6Rsq7i9Yr-wNdKZqsKJGqWvUsXOQDehqWpsNk-3aYXqX1pC88xr-0lg/exec';
-export const DEFAULT_SPREADSHEET_ID = '18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8';
+export const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx310Kdmr4FD6CcAuSwfKqNO-8zDZ0TdQLc3RBILogU3DwpOHM6XOUw1hZLERNyVR3BZg/exec';
+export const DEFAULT_SPREADSHEET_ID = '1jejmJlaGXD7AYxu6bVVXC7sQWFXaL81hW0lzEP3anTY';
 export const DEFAULT_DRIVE_FOLDER_ID = '1mQwSeNLsVGFaNzTKqbUyV4-NeViBuObo';
 
 export class GasApiService {
@@ -25,10 +27,17 @@ export class GasApiService {
     const envUrl = import.meta.env.VITE_API_URL || '';
     const storedUrl = typeof window !== 'undefined' ? (localStorage.getItem(GAS_URL_STORAGE_KEY) || '') : '';
     
-    // Validasi URL: jika kosong atau bukan URL Apps Script valid, gunakan DEFAULT_GAS_URL
-    let finalUrl = (storedUrl || envUrl || DEFAULT_GAS_URL).trim();
-    if (!finalUrl.startsWith('https://script.google.com/macros/s/')) {
-      finalUrl = DEFAULT_GAS_URL;
+    // Migrasi otomatis jika browser masih menyimpan URL GAS lama
+    const OLD_LEGACY_GAS_URL = 'https://script.google.com/macros/s/AKfycbzu-zcoOlitQEF6Rsq7i9Yr-wNdKZqsKJGqWvUsXOQDehqWpsNk-3aYXqX1pC88xr-0lg/exec';
+    let finalUrl = storedUrl.trim();
+    if (!finalUrl || finalUrl === OLD_LEGACY_GAS_URL || !finalUrl.startsWith('https://script.google.com/macros/s/')) {
+      finalUrl = (envUrl || DEFAULT_GAS_URL).trim();
+      // Bersihkan cache peserta lama jika bermigrasi ke URL/spreadsheet baru
+      if (typeof window !== 'undefined' && storedUrl === OLD_LEGACY_GAS_URL) {
+        localStorage.removeItem(LOCAL_PESERTA_KEY);
+        localStorage.removeItem('digitalmeera_peserta_list');
+        localStorage.removeItem('digitalmeera_dashboard_cache');
+      }
     }
 
     this.apiUrl = finalUrl;
@@ -107,17 +116,25 @@ export class GasApiService {
         const pTimer = setTimeout(() => proxyController.abort(), timeoutMs);
         
         let pRes: Response;
+        const proxyHeaders: Record<string, string> = {
+          'x-gas-url': this.apiUrl,
+        };
+
         if (!isWriteAction && preferredMethod === 'GET') {
           const queryParams = new URLSearchParams({ action, ...payload });
           pRes = await fetch(`/api/gas?${queryParams.toString()}`, {
             method: 'GET',
             signal: proxyController.signal,
+            headers: proxyHeaders,
           });
         } else {
           pRes = await fetch('/api/gas', {
             method: 'POST',
             signal: proxyController.signal,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              ...proxyHeaders,
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ action, ...payload }),
           });
         }
@@ -947,10 +964,18 @@ export class GasApiService {
   async updateProfil(data: Partial<ProfilLembaga>): Promise<ApiResponse> {
     const local = this.getLocalProfil();
     const isClearingLogo = data.logo === '';
+    
+    if (isClearingLogo) {
+      this.clearCustomLogo();
+    } else if (data.logo && (data.logo.startsWith('data:image') || data.logo.startsWith('blob:'))) {
+      this.setCustomLogo(data.logo);
+    }
+
+    const customLogo = this.getCustomLogo();
     const profil: ProfilLembaga = {
       ...local,
       ...data,
-      logo: isClearingLogo ? '' : (data.logo || local.logo || ''),
+      logo: isClearingLogo ? '' : (customLogo || data.logo || local.logo || ''),
       updatedAt: new Date().toISOString()
     };
     this.saveLocalProfil(profil, isClearingLogo);
@@ -1151,11 +1176,84 @@ export class GasApiService {
     }
   }
 
+  public formatLogoUrl(url: string | null | undefined): string {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('data:image') || trimmed.startsWith('blob:')) return trimmed;
+
+    // Google Drive URL to high-speed proxy/CDN
+    const match = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                  trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                  trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      const fileId = match[1];
+      return `/api/photo?id=${fileId}`;
+    }
+    return trimmed;
+  }
+
+  public getCustomLogo(): string {
+    if (typeof window === 'undefined') return '';
+    if (localStorage.getItem(CUSTOM_LOGO_CLEARED_KEY) === 'true') return '';
+    return localStorage.getItem(CUSTOM_LOGO_KEY) || '';
+  }
+
+  public setCustomLogo(logo: string): void {
+    if (typeof window === 'undefined') return;
+    try {
+      if (logo) {
+        localStorage.setItem(CUSTOM_LOGO_KEY, logo);
+        localStorage.removeItem(CUSTOM_LOGO_CLEARED_KEY);
+      } else {
+        localStorage.removeItem(CUSTOM_LOGO_KEY);
+        localStorage.setItem(CUSTOM_LOGO_CLEARED_KEY, 'true');
+      }
+    } catch (e) {
+      console.warn('Storage warning for custom logo', e);
+    }
+
+    // Persistensi sinkron/asinkron ke backend Express
+    fetch('/api/logo', {
+      method: logo ? 'POST' : 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: logo ? JSON.stringify({ logo }) : undefined,
+    }).catch(() => {});
+  }
+
+  public clearCustomLogo(): void {
+    this.setCustomLogo('');
+  }
+
+  public async initCustomLogo(): Promise<string> {
+    if (typeof window === 'undefined') return '';
+    const localLogo = this.getCustomLogo();
+    if (localLogo) return localLogo;
+
+    // Sinkronkan dari server backend jika belum ada di localStorage dan belum dihapus
+    if (localStorage.getItem(CUSTOM_LOGO_CLEARED_KEY) === 'true') return '';
+
+    try {
+      const res = await fetch('/api/logo');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.logo) {
+          this.setCustomLogo(json.logo);
+          const current = this.getLocalProfil();
+          this.saveLocalProfil({ ...current, logo: json.logo }, false);
+          return json.logo;
+        }
+      }
+    } catch {}
+    return '';
+  }
+
   public getLocalProfil(): ProfilLembaga {
+    const customLogo = this.getCustomLogo();
     if (typeof window === 'undefined') {
       return {
         namaLembaga: 'DIGITALMEERA',
-        logo: '',
+        logo: customLogo || '',
         alamat: 'Jl. Pendidikan No. 12, Indonesia',
         nomorWA: '081234567890',
         email: 'info@digitalmeera.tech',
@@ -1164,11 +1262,21 @@ export class GasApiService {
       };
     }
     const raw = localStorage.getItem(LOCAL_PROFIL_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (customLogo) {
+          parsed.logo = customLogo;
+        } else if (parsed.logo) {
+          parsed.logo = this.formatLogoUrl(parsed.logo);
+        }
+        return parsed;
+      } catch {}
+    }
 
     const defaultProfil: ProfilLembaga = {
       namaLembaga: 'DIGITALMEERA',
-      logo: '',
+      logo: customLogo || '',
       alamat: 'Jl. Pendidikan No. 12, Indonesia',
       nomorWA: '081234567890',
       email: 'info@digitalmeera.tech',
@@ -1190,10 +1298,25 @@ export class GasApiService {
         }
       } catch {}
 
-      // Pertahankan logo yang diunggah jika profil baru tidak menyediakan logo
-      const effectiveLogo = allowClearLogo 
-        ? (profil.logo || '') 
-        : (profil.logo || currentLogo || '');
+      let effectiveLogo = '';
+      if (allowClearLogo) {
+        this.clearCustomLogo();
+        effectiveLogo = '';
+      } else {
+        const customLogo = this.getCustomLogo();
+        if (profil.logo && (profil.logo.startsWith('data:image') || profil.logo.startsWith('blob:'))) {
+          // Newly uploaded image
+          this.setCustomLogo(profil.logo);
+          effectiveLogo = profil.logo;
+        } else if (customLogo) {
+          // Selalu pertahankan custom logo yang telah diupload pengguna
+          effectiveLogo = customLogo;
+        } else if (profil.logo) {
+          effectiveLogo = this.formatLogoUrl(profil.logo);
+        } else {
+          effectiveLogo = currentLogo || '';
+        }
+      }
 
       const finalProfil: ProfilLembaga = {
         ...profil,

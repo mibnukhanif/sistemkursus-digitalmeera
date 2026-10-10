@@ -225,7 +225,7 @@ export const PesertaPage: React.FC<PesertaPageProps> = ({ profil }) => {
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <a
-            href="https://docs.google.com/spreadsheets/d/18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8/edit"
+            href={`https://docs.google.com/spreadsheets/d/${gasApi.getSpreadsheetId()}/edit`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-all"

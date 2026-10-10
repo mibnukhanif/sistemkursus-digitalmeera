@@ -592,7 +592,11 @@
 
       try {
         // 1. Simpan ke Google Apps Script Web App
-        let gasUrl = localStorage.getItem('digitalmeera_gas_url') || 'https://script.google.com/macros/s/AKfycbzu-zcoOlitQEF6Rsq7i9Yr-wNdKZqsKJGqWvUsXOQDehqWpsNk-3aYXqX1pC88xr-0lg/exec';
+        let gasUrl = localStorage.getItem('digitalmeera_gas_url') || 'https://script.google.com/macros/s/AKfycbx310Kdmr4FD6CcAuSwfKqNO-8zDZ0TdQLc3RBILogU3DwpOHM6XOUw1hZLERNyVR3BZg/exec';
+        if (gasUrl.includes('AKfycbzu-zco')) {
+          gasUrl = 'https://script.google.com/macros/s/AKfycbx310Kdmr4FD6CcAuSwfKqNO-8zDZ0TdQLc3RBILogU3DwpOHM6XOUw1hZLERNyVR3BZg/exec';
+          localStorage.setItem('digitalmeera_gas_url', gasUrl);
+        }
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('gasUrl')) {
           gasUrl = urlParams.get('gasUrl');

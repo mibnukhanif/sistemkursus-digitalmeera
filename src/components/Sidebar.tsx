@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,6 +12,7 @@ import {
   GraduationCap,
   ExternalLink
 } from 'lucide-react';
+import { gasApi } from '../services/gasApi';
 
 export type ActivePage = 
   | 'dashboard'
@@ -43,6 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   footerText = '© DIGITALMEERA',
   logo,
 }) => {
+  const [logoError, setLogoError] = useState<boolean>(false);
+  const formattedLogo = logo ? gasApi.formatLogoUrl(logo) : '';
+
   const menuItems: Array<{ id: ActivePage; label: string; icon: React.FC<{ className?: string }> }> = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'peserta', label: 'Data Peserta', icon: Users },
@@ -72,9 +76,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="flex h-16 items-center justify-between border-b border-slate-800 px-5">
           <div className="flex items-center gap-2.5 min-w-0">
-            {logo ? (
+            {formattedLogo && !logoError ? (
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/95 border border-slate-700/80 p-1 shadow-md overflow-hidden">
-                <img src={logo} alt={appTitle} className="max-h-full max-w-full object-contain" />
+                <img 
+                  src={formattedLogo} 
+                  alt={appTitle} 
+                  className="max-h-full max-w-full object-contain"
+                  onError={() => setLogoError(true)} 
+                />
               </div>
             ) : (
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500 font-bold text-white shadow-md">

@@ -48,6 +48,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, profil
   }, []);
 
   const profil = internalProfil;
+  const [logoError, setLogoError] = useState<boolean>(false);
+  const formattedLogo = profil?.logo ? gasApi.formatLogoUrl(profil.logo) : '';
   const [stats, setStats] = useState<DashboardStats>(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('digitalmeera_dashboard_cache');
@@ -160,11 +162,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, profil
           <div className="flex items-center gap-4 min-w-0">
             {/* Logo Container */}
             <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xs overflow-hidden transition-all">
-              {profil?.logo ? (
+              {formattedLogo && !logoError ? (
                 <img
-                  src={profil.logo}
-                  alt={profil.namaLembaga || 'Logo Digitalmeera'}
+                  src={formattedLogo}
+                  alt={profil?.namaLembaga || 'Logo Digitalmeera'}
                   className="max-h-full max-w-full object-contain"
+                  onError={() => setLogoError(true)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-sm font-black text-xl">
@@ -188,7 +191,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, profil
                 Dashboard Sistem Manajemen Kursus & Presensi Barcode Digital
               </p>
               <p className="text-[11px] sm:text-xs text-slate-400 mt-1 truncate">
-                {profil?.alamat ? `${profil.alamat} • ` : ''}Pusat Spreadsheet: <span className="font-mono text-slate-600 font-semibold">18d2NpE...</span>
+                {profil?.alamat ? `${profil.alamat} • ` : ''}Pusat Spreadsheet: <span className="font-mono text-slate-600 font-semibold">{gasApi.getSpreadsheetId().slice(0, 8)}...</span>
               </p>
             </div>
           </div>
@@ -196,7 +199,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, profil
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <a
-              href="https://docs.google.com/spreadsheets/d/18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8/edit"
+              href={`https://docs.google.com/spreadsheets/d/${gasApi.getSpreadsheetId()}/edit`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-xs"

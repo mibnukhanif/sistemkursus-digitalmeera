@@ -210,6 +210,7 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
             dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.9);
           }
           setLogo(dataUrl);
+          gasApi.setCustomLogo(dataUrl);
 
           // Secara otomatis update profil & simpan agar logo di login & sidebar langsung berganti seketika
           const updated: ProfilLembaga = {
@@ -234,6 +235,7 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
       img.onerror = async () => {
         try {
           setLogo(src);
+          gasApi.setCustomLogo(src);
           const updated: ProfilLembaga = {
             namaLembaga,
             logo: src,
@@ -258,6 +260,7 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
   // Hapus Logo Lembaga
   const handleRemoveLogo = async () => {
     setLogo('');
+    gasApi.clearCustomLogo();
     const updated: ProfilLembaga = {
       namaLembaga,
       logo: '',
@@ -1242,10 +1245,10 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
                 Google Spreadsheet Database
               </span>
               <p className="font-mono text-xs text-slate-800 font-semibold break-all">
-                18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8
+                {gasApi.getSpreadsheetId()}
               </p>
               <a
-                href="https://docs.google.com/spreadsheets/d/18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8/edit"
+                href={`https://docs.google.com/spreadsheets/d/${gasApi.getSpreadsheetId()}/edit`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 hover:underline pt-1"
@@ -1260,10 +1263,10 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
                 Google Drive Storage Folder
               </span>
               <p className="font-mono text-xs text-slate-800 font-semibold break-all">
-                1mQwSeNLsVGFaNzTKqbUyV4-NeViBuObo
+                {gasApi.getDriveFolderId()}
               </p>
               <a
-                href="https://drive.google.com/drive/folders/1mQwSeNLsVGFaNzTKqbUyV4-NeViBuObo"
+                href={`https://drive.google.com/drive/folders/${gasApi.getDriveFolderId()}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 hover:underline pt-1"

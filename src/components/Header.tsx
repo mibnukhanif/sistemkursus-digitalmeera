@@ -27,6 +27,9 @@ export const Header: React.FC<HeaderProps> = ({
   const [currentDate, setCurrentDate] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncFeedback, setSyncFeedback] = useState<string>('');
+  const [logoError, setLogoError] = useState<boolean>(false);
+
+  const formattedLogo = profil?.logo ? gasApi.formatLogoUrl(profil.logo) : '';
 
   const handleGlobalSync = async () => {
     setIsSyncing(true);
@@ -85,12 +88,13 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-2.5">
-          {profil.logo ? (
+          {formattedLogo && !logoError ? (
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200/90 p-1 shadow-xs overflow-hidden">
               <img 
-                src={profil.logo} 
+                src={formattedLogo} 
                 alt={profil.namaLembaga || 'Logo'} 
                 className="max-h-full max-w-full object-contain" 
+                onError={() => setLogoError(true)}
               />
             </div>
           ) : (

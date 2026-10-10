@@ -45,6 +45,9 @@ export function App() {
     // Sinkronisasi data awal menyeluruh (peserta, absensi, profil) secara simultan & instan
     const initApp = async () => {
       try {
+        await gasApi.initCustomLogo();
+        setProfil(gasApi.getLocalProfil());
+
         const res = await gasApi.syncAll();
         if (res.success && res.data?.profil?.namaLembaga) {
           setProfil(res.data.profil);
@@ -81,6 +84,8 @@ export function App() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(ADMIN_SESSION_KEY);
     }
+    // Pastikan profil & logo tetap terjaga saat kembali ke layar login
+    setProfil(gasApi.getLocalProfil());
   };
 
   // If not logged in, show LoginPage

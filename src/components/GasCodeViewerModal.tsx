@@ -22,17 +22,22 @@ export const GasCodeViewerModal: React.FC<GasCodeViewerModalProps> = ({
  * Deploy -> New deployment -> Web app -> Anyone.
  */
 
-const SPREADSHEET_ID = "18d2NpE-Y4cm19LjNWo7UPZdMPdcv8CQImRcF3jupTa8";
+const SPREADSHEET_ID = "1jejmJlaGXD7AYxu6bVVXC7sQWFXaL81hW0lzEP3anTY";
 const DRIVE_ROOT_FOLDER_ID = "1mQwSeNLsVGFaNzTKqbUyV4-NeViBuObo";
 
 function getAppSpreadsheet() {
+  try {
+    const active = SpreadsheetApp.getActiveSpreadsheet();
+    if (active) return active;
+  } catch (e) {}
+
   if (SPREADSHEET_ID) {
     try {
       const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
       if (ss) return ss;
     } catch (e) {}
   }
-  return SpreadsheetApp.getActiveSpreadsheet();
+  return SpreadsheetApp.openById("1jejmJlaGXD7AYxu6bVVXC7sQWFXaL81hW0lzEP3anTY");
 }
 
 function getAppRootFolder() {
