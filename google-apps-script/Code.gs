@@ -1377,7 +1377,27 @@ function handleUpdateProfil(params) {
     sheet.appendRow(rowData);
   }
 
-  return { success: true, message: "Profil lembaga berhasil diperbarui.", logo: logoUrl };
+  // Wajib bersihkan cache agar sinkronisasi lintas perangkat langsung aktif
+  clearSyncCache();
+
+  const updatedProfilObj = {
+    namaLembaga: params.namaLembaga || "DIGITALMEERA",
+    logo: logoUrl,
+    alamat: params.alamat || "",
+    nomorWA: params.nomorWA || "",
+    email: params.email || "",
+    website: params.website || "",
+    footer: params.footer || "© DIGITALMEERA - Sistem Kursus & Les Privat",
+    updatedAt: now
+  };
+
+  return {
+    success: true,
+    message: "Profil lembaga berhasil diperbarui.",
+    logo: logoUrl,
+    data: updatedProfilObj,
+    profil: updatedProfilObj
+  };
 }
 
 // ============================================================================

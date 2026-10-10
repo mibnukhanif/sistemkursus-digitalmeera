@@ -19,6 +19,7 @@ import {
 import { gasApi } from '../services/gasApi';
 import { DashboardStats, ProfilLembaga } from '../types';
 import { ActivePage } from '../components/Sidebar';
+import { InstitutionLogo } from '../components/InstitutionLogo';
 
 interface DashboardPageProps {
   onNavigate: (page: ActivePage) => void;
@@ -48,8 +49,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, profil
   }, []);
 
   const profil = internalProfil;
-  const [logoError, setLogoError] = useState<boolean>(false);
-  const formattedLogo = profil?.logo ? gasApi.formatLogoUrl(profil.logo) : '';
   const [stats, setStats] = useState<DashboardStats>(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('digitalmeera_dashboard_cache');
@@ -162,18 +161,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, profil
           <div className="flex items-center gap-4 min-w-0">
             {/* Logo Container */}
             <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xs overflow-hidden transition-all">
-              {formattedLogo && !logoError ? (
-                <img
-                  src={formattedLogo}
-                  alt={profil?.namaLembaga || 'Logo Digitalmeera'}
-                  className="max-h-full max-w-full object-contain"
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-sm font-black text-xl">
-                  <GraduationCap className="h-8 w-8 text-white" />
-                </div>
-              )}
+              <InstitutionLogo
+                logo={profil?.logo}
+                alt={profil?.namaLembaga || 'Logo Digitalmeera'}
+                size={400}
+                fallbackType="cap"
+              />
             </div>
 
             {/* Institution Info */}

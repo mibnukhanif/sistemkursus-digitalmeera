@@ -3,6 +3,7 @@ import { ProfilLembaga, Shift, CardTemplateConfig, AdminUser } from '../types';
 import { gasApi } from '../services/gasApi';
 import { Modal } from '../components/Modal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { InstitutionLogo } from '../components/InstitutionLogo';
 import { 
   User, 
   Building2, 
@@ -650,11 +651,13 @@ export const PengaturanPage: React.FC<PengaturanPageProps> = ({
               </label>
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden p-1 shadow-2xs">
-                  {logo ? (
-                    <img src={logo} alt="Logo" className="max-h-full max-w-full object-contain" />
-                  ) : (
-                    <span className="font-bold text-sm text-slate-400">DM</span>
-                  )}
+                  <InstitutionLogo
+                    logo={logo}
+                    alt="Logo Digitalmeera"
+                    size={300}
+                    fallbackType="badge"
+                    fallbackText="DM"
+                  />
                 </div>
                 <div className="flex items-center gap-2.5">
                   <label className={`cursor-pointer rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs transition-colors ${logoUploading ? 'opacity-50 pointer-events-none' : ''}`}>

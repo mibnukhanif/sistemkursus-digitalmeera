@@ -6,6 +6,7 @@ import { generateQrCodeDataUrl } from '../lib/qrcode';
 import { getOptimizedPhotoUrl, getFallbackPhotoUrl, getProxyPhotoUrl } from '../lib/photo';
 import { Modal } from '../components/Modal';
 import { StudentPhoto } from '../components/StudentPhoto';
+import { InstitutionLogo } from '../components/InstitutionLogo';
 import { 
   CreditCard, 
   Download, 
@@ -86,13 +87,15 @@ const StudentCardItem: React.FC<{
           {!hasCustomTemplate ? (
             <div className="flex items-center justify-between border-b border-white/10 pb-1.5 pt-0.5">
               <div className="flex items-center gap-1.5 min-w-0">
-                {profil.logo ? (
-                  <img src={profil.logo} alt="Logo" className="h-5 w-5 rounded object-contain bg-white/20 p-0.5" />
-                ) : (
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white/20 text-[9px] font-black">
-                    DM
-                  </div>
-                )}
+                <div className="h-5 w-5 shrink-0 rounded bg-white/20 p-0.5 overflow-hidden flex items-center justify-center">
+                  <InstitutionLogo
+                    logo={profil.logo}
+                    alt="Logo"
+                    size={100}
+                    fallbackType="badge"
+                    fallbackText="DM"
+                  />
+                </div>
                 <div className="min-w-0">
                   <h4 className="text-[11px] font-bold tracking-wider leading-none text-white truncate">
                     {profil.namaLembaga || 'DIGITALMEERA'}
@@ -110,7 +113,15 @@ const StudentCardItem: React.FC<{
             <div className="flex items-center justify-between pb-1">
               <div className="flex items-center gap-1.5">
                 {profil.logo && (
-                  <img src={profil.logo} alt="Logo" className="h-5 w-5 rounded object-contain bg-white/40 p-0.5" />
+                  <div className="h-5 w-5 shrink-0 rounded bg-white/40 p-0.5 overflow-hidden flex items-center justify-center">
+                    <InstitutionLogo
+                      logo={profil.logo}
+                      alt="Logo"
+                      size={100}
+                      fallbackType="badge"
+                      fallbackText="DM"
+                    />
+                  </div>
                 )}
                 <span className="text-[9px] font-bold text-white drop-shadow-md">
                   {profil.namaLembaga || 'DIGITALMEERA'}

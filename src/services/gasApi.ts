@@ -328,7 +328,7 @@ export class GasApiService {
             this.saveLocalShifts(normShifts);
           }
           if (raw.profil && raw.profil.namaLembaga) {
-            this.saveLocalProfil(raw.profil, false);
+            this.saveLocalProfil(raw.profil, false, true);
           }
 
           const dbStats = raw.dashboard || this.calculateLocalDashboardStats();
@@ -983,8 +983,16 @@ export class GasApiService {
     if (this.isConnectedToGas()) {
       try {
         const gasRes = await this.requestGAS('updateProfil', data);
-        if (gasRes.success && gasRes.data) {
-          this.saveLocalProfil({ ...profil, ...gasRes.data }, isClearingLogo);
+        if (gasRes.success) {
+          const remoteData = gasRes.data || (gasRes as any).profil;
+          const remoteLogo = (gasRes as any).logo || remoteData?.logo;
+          const merged = {
+            ...profil,
+            ...(remoteData || {}),
+            logo: isClearingLogo ? '' : (profil.logo || remoteLogo || ''),
+          };
+          this.saveLocalProfil(merged, isClearingLogo, false);
+          return { success: true, message: 'Profil lembaga berhasil diperbarui.', data: merged };
         }
         return gasRes;
       } catch (err) {
@@ -1176,7 +1184,7 @@ export class GasApiService {
     }
   }
 
-  public formatLogoUrl(url: string | null | undefined): string {
+  public formatLogoUrl(url: string | null | undefined, size: number = 400): string {
     if (!url || typeof url !== 'string') return '';
     const trimmed = url.trim();
     if (!trimmed) return '';
@@ -1188,7 +1196,8 @@ export class GasApiService {
                   trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
       const fileId = match[1];
-      return `/api/photo?id=${fileId}`;
+      // Google Global High-speed Image CDN (bebas CORS & langsung dapat dirender semua device)
+      return `https://lh3.googleusercontent.com/d/${fileId}=s${size}`;
     }
     return trimmed;
   }
@@ -1227,12 +1236,8 @@ export class GasApiService {
 
   public async initCustomLogo(): Promise<string> {
     if (typeof window === 'undefined') return '';
-    const localLogo = this.getCustomLogo();
-    if (localLogo) return localLogo;
 
-    // Sinkronkan dari server backend jika belum ada di localStorage dan belum dihapus
-    if (localStorage.getItem(CUSTOM_LOGO_CLEARED_KEY) === 'true') return '';
-
+    // Sinkronkan dari backend /api/logo jika tersedia (agar device lain langsung menerima logo terbaru)
     try {
       const res = await fetch('/api/logo');
       if (res.ok) {
@@ -1240,11 +1245,14 @@ export class GasApiService {
         if (json.success && json.logo) {
           this.setCustomLogo(json.logo);
           const current = this.getLocalProfil();
-          this.saveLocalProfil({ ...current, logo: json.logo }, false);
+          this.saveLocalProfil({ ...current, logo: json.logo }, false, false);
           return json.logo;
         }
       }
     } catch {}
+
+    const localLogo = this.getCustomLogo();
+    if (localLogo) return localLogo;
     return '';
   }
 
@@ -1287,7 +1295,7 @@ export class GasApiService {
     return defaultProfil;
   }
 
-  public saveLocalProfil(profil: ProfilLembaga, allowClearLogo: boolean = false): void {
+  public saveLocalProfil(profil: ProfilLembaga, allowClearLogo: boolean = false, fromRemoteSync: boolean = false): void {
     if (typeof window !== 'undefined') {
       let currentLogo = '';
       try {
@@ -1305,9 +1313,17 @@ export class GasApiService {
       } else {
         const customLogo = this.getCustomLogo();
         if (profil.logo && (profil.logo.startsWith('data:image') || profil.logo.startsWith('blob:'))) {
-          // Newly uploaded image
+          // Newly uploaded image on this device
           this.setCustomLogo(profil.logo);
           effectiveLogo = profil.logo;
+        } else if (fromRemoteSync && profil.logo) {
+          // Datang dari sinkronisasi Google Spreadsheet di perangkat lain
+          const formatted = this.formatLogoUrl(profil.logo);
+          effectiveLogo = formatted || profil.logo;
+          // Simpan juga sebagai custom logo jika belum ada custom logo lokal atau jika custom logo adalah url
+          if (!customLogo || customLogo.startsWith('http') || customLogo.startsWith('/api/')) {
+            this.setCustomLogo(effectiveLogo);
+          }
         } else if (customLogo) {
           // Selalu pertahankan custom logo yang telah diupload pengguna
           effectiveLogo = customLogo;

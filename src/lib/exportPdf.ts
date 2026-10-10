@@ -163,9 +163,20 @@ async function renderCardOnPdfPage(
 
     // LOGO LEMBAGA pada PDF
     let textStartX = 5;
-    if (profil.logo && (profil.logo.startsWith('data:image') || profil.logo.startsWith('http'))) {
+    let logoDataUrl = '';
+    if (profil.logo) {
+      if (profil.logo.startsWith('data:image')) {
+        logoDataUrl = profil.logo;
+      } else {
+        try {
+          logoDataUrl = await fetchPhotoAsDataUrl(profil.logo);
+        } catch {}
+      }
+    }
+
+    if (logoDataUrl) {
       try {
-        doc.addImage(profil.logo, 'PNG', 4.5, 3.2, 7.5, 7.5);
+        doc.addImage(logoDataUrl, 'PNG', 4.5, 3.2, 7.5, 7.5);
         textStartX = 13.5;
       } catch {
         drawDefaultLogoEmblemPdf(doc, 4.5, 3.2, 7.5, accentColor);
@@ -445,7 +456,18 @@ export async function downloadCardAsJpg(
     // LOGO LEMBAGA pada Canvas JPG
     let headerTextStartX = 42;
     let logoDrawn = false;
-    if (profil.logo && (profil.logo.startsWith('data:image') || profil.logo.startsWith('http'))) {
+    let canvasLogoSrc = '';
+    if (profil.logo) {
+      if (profil.logo.startsWith('data:image')) {
+        canvasLogoSrc = profil.logo;
+      } else {
+        try {
+          canvasLogoSrc = await fetchPhotoAsDataUrl(profil.logo);
+        } catch {}
+      }
+    }
+
+    if (canvasLogoSrc) {
       try {
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
@@ -456,7 +478,7 @@ export async function downloadCardAsJpg(
             resolve(true);
           };
           logoImg.onerror = () => resolve(false);
-          logoImg.src = profil.logo!;
+          logoImg.src = canvasLogoSrc;
         });
       } catch {}
     }

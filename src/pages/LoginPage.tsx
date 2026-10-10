@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { GraduationCap, Lock, User, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Lock, User, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { gasApi } from '../services/gasApi';
 import { AdminUser, ProfilLembaga } from '../types';
+import { InstitutionLogo } from '../components/InstitutionLogo';
 
 interface LoginPageProps {
   onLoginSuccess: (admin: AdminUser) => void;
@@ -14,7 +15,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, profil }) 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [imgError, setImgError] = useState<boolean>(false);
 
   const displayLogo = profil?.logo || gasApi.getLocalProfil()?.logo || '';
 
@@ -50,20 +50,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, profil }) 
           {/* Card Header with Glowing Accent */}
           <div className="relative border-b border-slate-800 bg-gradient-to-b from-sky-500/10 to-transparent p-8 text-center">
             <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg transition-all ${
-              displayLogo && !imgError
+              displayLogo
                 ? 'bg-slate-800/90 border border-slate-700/80 p-2 shadow-sky-500/10'
-                : 'bg-gradient-to-tr from-sky-500 to-indigo-600 shadow-sky-500/25'
+                : 'bg-gradient-to-tr from-sky-500 to-indigo-600 shadow-sky-500/25 p-2.5'
             }`}>
-              {displayLogo && !imgError ? (
-                <img 
-                  src={gasApi.formatLogoUrl(displayLogo)} 
-                  alt={profil?.namaLembaga || 'Logo'} 
-                  className="max-h-full max-w-full object-contain"
-                  onError={() => setImgError(true)} 
-                />
-              ) : (
-                <GraduationCap className="h-9 w-9 text-white" />
-              )}
+              <InstitutionLogo
+                logo={displayLogo}
+                alt={profil?.namaLembaga || 'Logo DIGITALMEERA'}
+                size={400}
+                fallbackType="cap"
+              />
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white">
               {profil.namaLembaga || 'DIGITALMEERA'}

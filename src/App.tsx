@@ -58,6 +58,18 @@ export function App() {
     };
     initApp();
 
+    let bc: BroadcastChannel | null = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('digitalmeera_sync');
+        bc.onmessage = (ev) => {
+          if (ev.data?.type === 'PROFIL_UPDATED' && ev.data?.profil) {
+            setProfil(ev.data.profil);
+          }
+        };
+      } catch {}
+    }
+
     const handleProfilSync = (e: any) => {
       const p = e?.detail || gasApi.getLocalProfil();
       setProfil(p);
@@ -67,6 +79,7 @@ export function App() {
     window.addEventListener('storage', handleProfilSync);
 
     return () => {
+      bc?.close();
       window.removeEventListener('profil_updated', handleProfilSync);
       window.removeEventListener('storage', handleProfilSync);
     };

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ProfilLembaga } from '../types';
 import { gasApi } from '../services/gasApi';
+import { InstitutionLogo } from './InstitutionLogo';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -27,9 +28,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [currentDate, setCurrentDate] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncFeedback, setSyncFeedback] = useState<string>('');
-  const [logoError, setLogoError] = useState<boolean>(false);
-
-  const formattedLogo = profil?.logo ? gasApi.formatLogoUrl(profil.logo) : '';
 
   const handleGlobalSync = async () => {
     setIsSyncing(true);
@@ -88,20 +86,15 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-2.5">
-          {formattedLogo && !logoError ? (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200/90 p-1 shadow-xs overflow-hidden">
-              <img 
-                src={formattedLogo} 
-                alt={profil.namaLembaga || 'Logo'} 
-                className="max-h-full max-w-full object-contain" 
-                onError={() => setLogoError(true)}
-              />
-            </div>
-          ) : (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-tr from-sky-600 to-indigo-600 font-bold text-white text-xs tracking-wider shadow-xs">
-              DM
-            </div>
-          )}
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200/90 p-1 shadow-xs overflow-hidden">
+            <InstitutionLogo
+              logo={profil?.logo}
+              alt={profil.namaLembaga || 'Logo DIGITALMEERA'}
+              size={200}
+              fallbackType="badge"
+              fallbackText="DM"
+            />
+          </div>
           <span className="hidden sm:inline font-bold tracking-tight text-slate-800 text-base">
             {profil.namaLembaga || 'DIGITALMEERA'}
           </span>

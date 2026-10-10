@@ -12,7 +12,7 @@ import {
   GraduationCap,
   ExternalLink
 } from 'lucide-react';
-import { gasApi } from '../services/gasApi';
+import { InstitutionLogo } from './InstitutionLogo';
 
 export type ActivePage = 
   | 'dashboard'
@@ -44,9 +44,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   footerText = '© DIGITALMEERA',
   logo,
 }) => {
-  const [logoError, setLogoError] = useState<boolean>(false);
-  const formattedLogo = logo ? gasApi.formatLogoUrl(logo) : '';
-
   const menuItems: Array<{ id: ActivePage; label: string; icon: React.FC<{ className?: string }> }> = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'peserta', label: 'Data Peserta', icon: Users },
@@ -76,20 +73,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="flex h-16 items-center justify-between border-b border-slate-800 px-5">
           <div className="flex items-center gap-2.5 min-w-0">
-            {formattedLogo && !logoError ? (
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/95 border border-slate-700/80 p-1 shadow-md overflow-hidden">
-                <img 
-                  src={formattedLogo} 
-                  alt={appTitle} 
-                  className="max-h-full max-w-full object-contain"
-                  onError={() => setLogoError(true)} 
-                />
-              </div>
-            ) : (
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500 font-bold text-white shadow-md">
-                <GraduationCap className="h-5 w-5 text-white" />
-              </div>
-            )}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/95 border border-slate-700/80 p-1 shadow-md overflow-hidden">
+              <InstitutionLogo
+                logo={logo}
+                alt={appTitle}
+                size={200}
+                fallbackType="cap"
+              />
+            </div>
             <div className="min-w-0">
               <h1 className="font-bold tracking-wider text-sm text-white truncate">
                 {appTitle}
