@@ -1,0 +1,10 @@
+{
+  "name": "Remix DigitalMeera Course Management System",
+  "description": "Professional platform for student registration, barcode-based attendance tracking, and automated course reporting using Google Sheets as a database.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

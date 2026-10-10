@@ -1,0 +1,56 @@
+{
+  "id": "/",
+  "name": "DIGITALMEERA - Kursus & Absensi",
+  "short_name": "Digitalmeera",
+  "description": "Sistem Manajemen Peserta Kursus, Absensi Siswa Barcode/QR Code, dan Cetak Kartu DIGITALMEERA",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0284c7",
+  "background_color": "#0f172a",
+  "lang": "id",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pendaftaran Mandiri",
+      "short_name": "Daftar",
+      "description": "Formulir Pendaftaran Siswa Mandiri",
+      "url": "/pendaftaran.html",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Absensi QR Scanner",
+      "short_name": "Absensi",
+      "description": "Scanner Kamera Absensi Siswa",
+      "url": "/#absensi",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
